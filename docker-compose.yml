@@ -1,0 +1,18 @@
+android-studio:
+  # image: toddsampson/project-tango-dev
+  build: android-studio/.
+  name: android-studio
+  container_name: android-studio
+  # net: projecttangodev
+  privileged: true
+  devices:
+      - "/dev/bus/usb:/dev/bus/usb"
+  volumes:
+      - "/home/toddsampson/AndroidStudioProjects:/home/android/AndroidStudioProjects"
+      - "/tmp/.X11-unix:/tmp/.X11-unix"
+      - "/dev/bus/usb:/dev/bus/usb"
+  environment:
+      - "DISPLAY=$DISPLAY"
+  ports:
+      - "5037:5037"
+      - "5554-5585:5554-5585"
