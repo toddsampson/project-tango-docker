@@ -33,6 +33,22 @@ RUN mkdir -p /usr/lib/android-studio && cd /usr/lib/android-studio && \
     rm -f android-studio-ide-141.2288178-linux.zip
     # TODO: Install more default sdk packages?
 
+# Add Google Vendor ID to UDEV Rules
+RUN echo 'SUBSYSTEM=="usb", ATTR{idVendor}=="18d1", MODE="0666", GROUP="plugdev"' | sudo tee -a /etc/udev/rules.d/51-android.rules && \
+    sudo chmod a+r /etc/udev/rules.d/51-android.rules
+
+# Setup android user, permissions and paths
+RUN export uid=${uid} gid=${gid} && \
+    echo "android:x:${uid}:${gid}:android,,,:/home/android:/bin/bash" >> /etc/passwd && \
+    echo "android:x:${uid}:" >> /etc/group && \
+    echo "android ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/android && \
+    chmod 0440 /etc/sudoers.d/android && \
+    chown ${uid}:${gid} -R /home/android && \
+    printf "export JDK_HOME=/usr/lib/jvm/jdk1.8.0_60\nexport JAVA_HOME=/usr/lib/jvm/jdk1.8.0_60 \nexport PATH=$PATH:/usr/lib/jvm/jdk1.8.0_60/bin:/usr/lib/android-studio/bin:/home/android/Android/android-ndk-r10e \n" | tee -a ~/.bashrc /home/android/.bashrc > /dev/null && \
+    sudo -s source ~/.bashrc
+USER android
+ENV HOME /home/android
+
 # Install Android NDK
 RUN mkdir -p /home/android/Android && cd /home/android/Android && \
     wget -c http://dl.google.com/android/ndk/android-ndk-r10e-linux-x86_64.bin && \
@@ -52,20 +68,4 @@ RUN sudo chmod 777 /srv && cd /srv && mkdir -p ~/.ssh && \
     wget https://developers.google.com/project-tango/downloads/TangoSDK_Yamabe_Unity.unitypackage && \
     wget https://developers.google.com/project-tango/downloads/TangoUX_Yamabe_Java.aar
 
-# Add Google Vendor ID to UDEV Rules
-RUN echo 'SUBSYSTEM=="usb", ATTR{idVendor}=="18d1", MODE="0666", GROUP="plugdev"' | sudo tee -a /etc/udev/rules.d/51-android.rules && \
-    sudo chmod a+r /etc/udev/rules.d/51-android.rules
-
-# Setup android user, permissions and paths
-RUN export uid=${uid} gid=${gid} && \
-    echo "android:x:${uid}:${gid}:android,,,:/home/android:/bin/bash" >> /etc/passwd && \
-    echo "android:x:${uid}:" >> /etc/group && \
-    echo "android ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/android && \
-    chmod 0440 /etc/sudoers.d/android && \
-    chown ${uid}:${gid} -R /home/android && \
-    printf "export JDK_HOME=/usr/lib/jvm/jdk1.8.0_60\nexport JAVA_HOME=/usr/lib/jvm/jdk1.8.0_60 \nexport PATH=$PATH:/usr/lib/jvm/jdk1.8.0_60/bin:/usr/lib/android-studio/bin:/usr/lib/android-ndk/android-ndk-r10e \n" | tee -a ~/.bashrc /home/android/.bashrc > /dev/null && \
-    sudo -s source ~/.bashrc && \
-    sudo chown android:android -R /srv && sudo chown android:android -R /home/android/Android
-USER android
-ENV HOME /home/android
 CMD bash

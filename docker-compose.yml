@@ -1,5 +1,5 @@
 android-studio:
-  # image: toddsampson/project-tango-dev
+  # image: toddsampson/project-tango-dev-environment
   build: android-studio/.
   name: android-studio
   container_name: android-studio
